@@ -7,7 +7,7 @@ from game.game_objects import HitObject, LaserObject
 
 
 class NoteTool:
-    def __init__(self):
+    def __init__(self, bpm):
         self.lane_count = 3
         self.pos_x = utils.scale_x(440)
         self.pos_y = utils.scale_y(0)
@@ -23,7 +23,7 @@ class NoteTool:
         self.notes = []
         self.lasers = []
         self.breakpoints= []
-        self.add_breakpoint(0)
+        self.add_breakpoint(0, float(bpm))
         self.laser_start = None
         self.laser_end = None
         self.laser_temp_position = None
@@ -53,7 +53,7 @@ class NoteTool:
             lane_x = start_x + lane_index * lane_width
 
             note_time = game_objects.HitObject.click_y_to_time(
-            mouse_y, editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+            mouse_y, editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
             time_until_note = note_time - editor_time_ms
             note_y = utils.scale_y(constants.HIT_LINE_Y) - time_until_note * constants.SCROLL_SPEED
 
@@ -108,7 +108,7 @@ class NoteTool:
         
         key = int((mouse_x - grid_start_x) / lane_width) + 1
         note_time = game_objects.HitObject.click_y_to_time(
-            mouse_y, editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+            mouse_y, editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
         
         for note in self.notes:
             if note.key == key and note.time == note_time:
@@ -121,11 +121,11 @@ class NoteTool:
 
     def drag_note(self, note, new_position, editor_time_ms, bpm, beat_divisor_value, note_part_clicked):
         mouse_x, mouse_y = new_position
-        bpm = int(bpm)
+        bpm = float(bpm)
         beat_divisor_value = float(Fraction(beat_divisor_value))
 
         new_note_time = game_objects.HitObject.click_y_to_time(
-            mouse_y, editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+            mouse_y, editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
         old_end_time = note.time + note.duration
         if note.duration == 0:
             note.duration = abs(new_note_time - note.time)
@@ -144,9 +144,9 @@ class NoteTool:
         start_pos = int((position_1[0] - self.pos_x) / laser_width) + 1
         end_pos = int((position_2[0] - self.pos_x) / laser_width) + 1       
         start_time = game_objects.HitObject.click_y_to_time(
-            position_1[1], initial_editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+            position_1[1], initial_editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
         end_time = game_objects.HitObject.click_y_to_time(
-            position_2[1], editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+            position_2[1], editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
         if start_time > end_time:
             start_time, end_time = end_time, start_time
             start_pos, end_pos = end_pos, start_pos 
@@ -169,9 +169,9 @@ class NoteTool:
             start_pos = int((self.laser_temp_position[0] - self.pos_x) / laser_width) + 1
             end_pos = int((position[0] - self.pos_x) / laser_width) + 1       
             start_time = game_objects.HitObject.click_y_to_time(
-                self.laser_temp_position[1], self.initial_editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+                self.laser_temp_position[1], self.initial_editor_time_ms, beat_divisor_value, self.get_breakpoint_segment)
             end_time = game_objects.HitObject.click_y_to_time(
-                position[1], editor_time_ms, bpm, beat_divisor_value, self.get_closest_breakpoint)
+                position[1], editor_time_ms, beat_divisor_value, self.get_closest_breakpoint)
             if start_time > end_time:
                 start_time, end_time = end_time, start_time
                 start_pos, end_pos = end_pos, start_pos 
@@ -242,19 +242,84 @@ class NoteTool:
 
         return None
 
-    def add_breakpoint(self, num):
-        num = int(num)
-        if num not in self.breakpoints:
-            bisect.insort(self.breakpoints, num)
+    def add_breakpoint(self, time_ms, bpm=None, ramp=False):
+        if bpm is None:
+            bpm = self.get_current_bpm(time_ms)
+        
+        for bp in self.breakpoints:
+            if bp["time"] == time_ms:
+                return
+
+        self.breakpoints.append({
+            "time": time_ms,
+            "bpm": bpm,
+            "ramp": ramp
+        })
+
+        self.breakpoints.sort(key=lambda x: x["time"])
+
+    def delete_breakpoint(self, time):
+        self.breakpoints = [
+            bp for bp in self.breakpoints
+            if bp["time"] != time
+        ]
+
+    def get_current_bpm(self, time_ms):
+        if not self.breakpoints:
+            return 100
+
+        for i in range(len(self.breakpoints) - 1):
+            current = self.breakpoints[i]
+            nxt = self.breakpoints[i + 1]
+
+            if current["time"] <= time_ms < nxt["time"]:
+                if current["ramp"]:
+                    progress = (time_ms - current["time"]) / (nxt["time"] - current["time"])
+                    return current["bpm"] + progress * (nxt["bpm"] - current["bpm"])
+                return current["bpm"]
+
+        return self.breakpoints[-1]["bpm"] 
 
     def get_breakpoints(self):
         return self.breakpoints
+    
+
+    
+    def get_breakpoints_text(self):
+        self.breakpoints.sort(key=lambda bp: bp["time"])
+
+        lines = []
+
+        for bp in self.breakpoints:
+            time = bp["time"]
+            bpm = bp["bpm"]
+            ramp = bp.get("ramp", False)
+
+            if ramp:
+                lines.append(f"{time} ms | {bpm} BPM | ramp")
+            else:
+                lines.append(f"{time} ms | {bpm} BPM")
+
+        return lines
 
     def get_closest_breakpoint(self, t):
-        index = bisect.bisect_right(self.breakpoints, t) - 1
+        times = [bp["time"] for bp in self.breakpoints]
+        index = bisect.bisect_right(times, t) - 1
         if index >= 0:
             return self.breakpoints[index]
         return self.breakpoints[0]
+    
+    def get_breakpoint_segment(self, t):
+        times = [bp["time"] for bp in self.breakpoints]
+        index = bisect.bisect_right(times, t) - 1
+
+        if index < 0:
+            return self.breakpoints[0], None
+
+        if index + 1 >= len(self.breakpoints):
+            return self.breakpoints[index], None
+
+        return self.breakpoints[index], self.breakpoints[index + 1]
     
     def change_cursor_on_hover(self, position, editor_time_ms):
         cursor_set = False  
@@ -329,47 +394,90 @@ class NoteTool:
                 end_pos = game_objects.LaserObject.denormalize_position(laser.end_pos)
                 f.write(f"{start}, {end}, {start_pos}, {end_pos}\n")
 
+            f.write("\n")
+
+            f.write("// Editor Breakpoint Ordering\n")
+            f.write("// time, bpm, ramp\n")
+            f.write("[Breakpoints]\n")
+            for bp in self.breakpoints:
+                time = bp["time"]
+                bpm = bp["bpm"]
+                ramp = "False"
+                if bp["ramp"] == True:
+                    ramp = "True"
+                f.write(f"{time}, {bpm}, {ramp}\n")
+
+
     def draw_hor_grid_lines(self, screen, editor_time_ms, bpm, audio_length_ms):
+
         color = (129,129,131)
         dot_width = 6
         dot_height = 3
         dot_spacing = 4
 
         breakpoints = self.get_breakpoints()
-        # Make sure last breakpoint covers audio end
-        if breakpoints[-1] < audio_length_ms:
-            breakpoints.append(audio_length_ms)
 
-        # Find top and bottom visible time
-        top_time = editor_time_ms - (self.width - constants.HIT_LINE_Y) / constants.SCROLL_SPEED
-        bottom_time = editor_time_ms + constants.HIT_LINE_Y / constants.SCROLL_SPEED
+        if breakpoints[-1]["time"] < audio_length_ms:
+            breakpoints.append({
+                "time": audio_length_ms,
+                "bpm": breakpoints[-1]["bpm"],
+                "ramp": False
+            })
 
-        # Iterate over each breakpoint segment
+        top_time = editor_time_ms - self.width / constants.SCROLL_SPEED
+        bottom_time = editor_time_ms + self.width / constants.SCROLL_SPEED
+
+        # Iterate breakpoint segments
         for i in range(len(breakpoints) - 1):
-            start_bp = breakpoints[i]
-            end_bp = breakpoints[i + 1]
 
-            # Skip if segment is completely outside visible area
-            if end_bp < top_time or start_bp > bottom_time:
+            bp = breakpoints[i]
+            next_bp = breakpoints[i + 1]
+
+            start_time = bp["time"]
+            end_time = next_bp["time"]
+
+            if end_time < top_time or start_time > bottom_time:
                 continue
 
-            # ms per beat for this segment
-            ms_per_beat = 60000 / int(bpm)  # you could also allow bpm per breakpoint if needed
+            # Segment BPM values
+            bpm_start = bp["bpm"]
+            bpm_end = next_bp["bpm"]
 
-            # Start at the first beat visible in this segment
-            first_beat_index = max(int((top_time - start_bp) // ms_per_beat), 0)
-            t = start_bp + first_beat_index * ms_per_beat
+            ramp = bp.get("ramp", False)
 
-            while t <= min(end_bp, bottom_time):
-                y = utils.scale_y(constants.HIT_LINE_Y) - (t - editor_time_ms) * constants.SCROLL_SPEED
-                if self.pos_y <= y <= self.pos_y + self.width:
-                    x = self.pos_x
-                    while x < self.pos_x + self.length:
-                        pygame.draw.rect(screen, color, (x, y - dot_height//2, dot_width, dot_height))
-                        x += dot_width + dot_spacing
+            # Base beat spacing
+            t = start_time
+
+            while t <= end_time:
+
+                # --- BPM interpolation ---
+                if ramp:
+                    duration = end_time - start_time
+                    if duration > 0:
+                        progress = (t - start_time) / duration
+                        current_bpm = bpm_start + progress * (bpm_end - bpm_start)
+                    else:
+                        current_bpm = bpm_start
+                else:
+                    current_bpm = bpm_start
+
+                ms_per_beat = 60000.0 / max(current_bpm, 0.01)
+
+                # Draw if visible
+                if top_time <= t <= bottom_time:
+
+                    y = utils.scale_y(constants.HIT_LINE_Y) - \
+                        (t - editor_time_ms) * constants.SCROLL_SPEED
+
+                    if self.pos_y <= y <= self.pos_y + self.width:
+
+                        x = self.pos_x
+                        while x < self.pos_x + self.length:
+                            pygame.draw.rect(
+                                screen,
+                                color,
+                                (x, y - dot_height//2, dot_width, dot_height)
+                            )
+                            x += dot_width + dot_spacing
+
                 t += ms_per_beat
-
-
-    
-
-

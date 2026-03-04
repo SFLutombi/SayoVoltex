@@ -184,7 +184,7 @@ def editor_initialize_menu(screen):
                                 metadata = assign_metadata(title_input.text, artist_input.text, version_input.text, 
                                                  scroll_speed_input.text, bpm_input.text, audio_lead_in_input.text, 
                                                  creator_input.text, audio_file_path, image_file_path)
-                                return states.EDITOR, metadata, objectdata, map_path
+                                return states.EDITOR, metadata, objectdata, bpdata, map_path
                             else:
                                 error_message = "Song folder already exists."
                                 utils.show_error_modal(screen, error_message)
@@ -222,8 +222,8 @@ def editor_initialize_menu(screen):
                         # Go to editor
                         if success:
                             song_parameters_set = True 
-                            metadata, objectdata = utils.parse_song_file(map_path)
-                            return states.EDITOR, metadata, objectdata, map_path
+                            metadata, objectdata, bpdata = utils.parse_song_file(map_path)
+                            return states.EDITOR, metadata, objectdata, bpdata, map_path
                     elif back_button.check_for_input(menu_mouse_pos):
                         editor_method_chosen = None
                 elif event.type == pygame.KEYDOWN:
@@ -307,6 +307,11 @@ def create_song_file(map_path, title, artist, version, scroll_speed, BPM, audio_
         f.write("\n// Laser Object Ordering\n")
         f.write("// start time, end time, start position, end position\n")
         f.write("[LaserObjects]\n")
+
+        
+        f.write("\n// Editor Breakpoint Ordering\n")
+        f.write("// time, bpm, ramp\n")
+        f.write("[Breakpoints]\n")
 
 def get_audio_file_path():
     root = tk.Tk()

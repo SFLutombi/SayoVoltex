@@ -42,7 +42,7 @@ while True:
     elif state == states.EDITOR_INITIALIZE:
         result = screen_editor_initialize.editor_initialize_menu(screen)
     elif state == states.EDITOR:
-            result = screen_editor.editor_menu(screen, metadata, objectdata, map_path)  
+            result = screen_editor.editor_menu(screen, metadata, objectdata, bpdata, map_path)  
 
     elif state == states.QUIT:
         pygame.quit()
@@ -53,8 +53,8 @@ while True:
         if len(result) == 2:
             state, counters = result
 
-        elif len(result) == 4:
-            state, metadata, objectdata, map_path = result
+        elif len(result) == 5:
+            state, metadata, objectdata, bpdata, map_path = result
 
     else:
         state = result

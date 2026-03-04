@@ -254,7 +254,7 @@ def map_loader(screen):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if in_editor:
-                        metadata, objectdata = utils.parse_song_file(constants.EDITOR_MAP_PATH)
+                        metadata, objectdata, bpdata = utils.parse_song_file(constants.EDITOR_MAP_PATH)
                         return states.EDITOR, metadata, objectdata, constants.EDITOR_MAP_PATH 
                     paused = True
                     continue
@@ -370,7 +370,7 @@ def map_loader(screen):
             if current_time_ms >= editor_song_length * 1000:
                 active_popup = None 
                 player.stop()
-                metadata, objectdata = utils.parse_song_file(constants.EDITOR_MAP_PATH)
+                metadata, objectdata, bpdata = utils.parse_song_file(constants.EDITOR_MAP_PATH)
                 return states.EDITOR, metadata, objectdata, constants.EDITOR_MAP_PATH 
 
 

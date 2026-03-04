@@ -71,21 +71,53 @@ class HitObject:
             )
         
     @staticmethod
-    def click_y_to_time(mouse_y, current_time_ms, bpm, beat_divisor_value, get_breakpoint):
-        bpm = int(bpm)
+    def click_y_to_time(mouse_y, current_time_ms, beat_divisor_value, get_breakpoint_segment):
         beat_divisor_value = float(Fraction(beat_divisor_value))
-        ms_per_beat = 60000 / bpm
-        ms_per_subdivision = (ms_per_beat / 0.25) * beat_divisor_value
+
+        # --- Convert Y → raw time ---
         hit_line_y = utils.scale_y(constants.HIT_LINE_Y)
         distance_px = hit_line_y - mouse_y
         time_offset_ms = distance_px / constants.SCROLL_SPEED
         raw_time = current_time_ms + time_offset_ms
-        breakpoint_time = get_breakpoint(raw_time)
+
+        # --- Get breakpoint segment ---
+        current_bp, next_bp = get_breakpoint_segment(raw_time)
+
+        breakpoint_time = current_bp["time"]
+        base_bpm = float(current_bp["bpm"])
+
+        # --- Compute BPM (handle ramp) ---
+        if current_bp.get("ramp", False) and next_bp:
+            segment_duration = next_bp["time"] - current_bp["time"]
+
+            if segment_duration > 0:
+                progress = (
+                    raw_time - current_bp["time"]
+                ) / segment_duration
+
+                # Clamp between 0–1
+                progress = max(0.0, min(progress, 1.0))
+
+                current_bpm = (
+                    base_bpm
+                    + progress * (float(next_bp["bpm"]) - base_bpm)
+                )
+            else:
+                current_bpm = base_bpm
+        else:
+            current_bpm = base_bpm
+
+        # --- Compute subdivision length ---
+        ms_per_beat = 60000 / current_bpm
+        ms_per_subdivision = (ms_per_beat / 0.25) * beat_divisor_value
+
+        # --- Snap time ---
         snapped_time = breakpoint_time + round(
             (raw_time - breakpoint_time) / ms_per_subdivision
         ) * ms_per_subdivision
+
         return int(snapped_time)
-    
+        
     def __str__(self):
         return f"HitObject(key={self.key}, time={self.time}ms, duration={self.duration}ms)"
 

@@ -131,6 +131,7 @@ def parse_song_file(path):
         "HitObjects": [],
         "LaserObjects": []
     }
+    bpdata = []
 
     current_section = None
 
@@ -148,6 +149,8 @@ def parse_song_file(path):
 
                 if section == "Metadata":
                     current_section = "Metadata"
+                elif section == "Breakpoints":
+                    current_section = "Breakpoints"
                 elif section == "HitObjects":
                     current_section = "HitObjects"
                 elif section == "LaserObjects":
@@ -174,8 +177,29 @@ def parse_song_file(path):
 
                 elif current_section == "LaserObjects":
                     objectdata["LaserObjects"].append(LaserObject(*parts))
+            
+            # BREAKPOINT DATA
+            if current_section == "Breakpoints" and "," in line:
+                parts = [p.strip() for p in line.split(",")]
+                try:
+                    time_ms = int(parts[0])
+                    bpm = float(parts[1])
 
-    return metadata, objectdata
+                    ramp = False
+                    if len(parts) >= 3:
+                        ramp = parts[2].lower() == "ramp"
+
+                    bpdata.append({
+                        "time": time_ms,
+                        "bpm": bpm,
+                        "ramp": ramp
+                    })
+
+                except ValueError:
+                    pass
+
+
+    return metadata, objectdata, bpdata
 
 def find_map_file(song_folder):
     if not song_folder == "":

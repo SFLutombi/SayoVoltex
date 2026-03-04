@@ -5,7 +5,7 @@ import tkinter as tk
 
 
 
-def editor_menu(screen, metadata, objectdata, map_path):
+def editor_menu(screen, metadata, objectdata, bpdata, map_path):
     pygame.display.set_caption("Editor")
     pygame.key.set_repeat(300, 50)
 
@@ -26,10 +26,12 @@ def editor_menu(screen, metadata, objectdata, map_path):
     map_lines_minimal = pygame.image.load("assets/images/map_lines_minimal.png")
     map_lines_minimal = pygame.transform.scale(map_lines_minimal, (utils.scale_x(400), utils.scale_y(720)))
 
-    editor_grid = note_tool.NoteTool()
+    editor_grid = note_tool.NoteTool(metadata["BPM"])
     if objectdata:
         set_object_data(editor_grid, objectdata)
-    editor_grid.add_breakpoint(int(metadata["Audio Lead In"]))
+    if bpdata:
+        set_bp_data(editor_grid, bpdata)
+    editor_grid.add_breakpoint(int(metadata["Audio Lead In"]), float(metadata["BPM"]))
 
     game_settings = settings.load_settings()
 
@@ -59,7 +61,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
     ["Title", "Artist", "Creator", "Version", "Scroll Speed", "BPM", "Audio Lead In"],
     font_xxtiny, font_tiny, True)
 
-    beat_divisor_value = {"value": "1/4"}
+    beat_divisor_value = {"value": constants.EDITOR_BEAT_DIVISOR}
     choose_beat_division_dropdown = dropdown.Dropdown(
     200, 0, 200, 40, "Choose Beat Division",
     ["1/4", "1/8", "1/12", "1/16", "1/24", "1/32"],
@@ -70,7 +72,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
                                   font=utils.get_font(utils.scale_y(constants.SIZE_SMALL)), base_color="#a1a1a1", hovering_color="White")
     breakpoints_dropdown = dropdown.Dropdown(
     1080, 0, 200, 40, "Breakpoints",
-    editor_grid.get_breakpoints(),
+    editor_grid.get_breakpoints_text(),
     font_xxtiny, font_tiny, True)
 
     note_button_image = pygame.image.load("assets/images/select_note_button.png")
@@ -121,6 +123,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_y:
                         constants.EDITOR_START_TIME = 0
+                        constants.EDITOR_BEAT_DIVISOR = "1/4"
                         return states.EDITOR_INITIALIZE
                     elif event.key == pygame.K_n or event.key == pygame.K_ESCAPE:
                         confirm_escape_key = False
@@ -150,7 +153,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
                     if event.type == pygame.KEYDOWN:
 
                         if event.key == pygame.K_y:
-                            breakpoints_dropdown.delete_breakpoint()
+                            breakpoints_dropdown.delete_breakpoint(editor_grid)
                             breakpoints_dropdown.input_active = False
 
                         elif event.key == pygame.K_n or event.key == pygame.K_ESCAPE:
@@ -173,7 +176,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
                     else:
                         editor_time_ms = audio_length_ms
                         time_line.update(constants.BASE_W)
-            elif event.type == pygame.KEYUP:
+            elif event.type == pygame.KEYUP and not breakpoints_dropdown.popup_mode == "add_breakpoint":
                 if event.key == pygame.K_SPACE:
                     if player.is_playing:
                         player.pause()
@@ -213,6 +216,8 @@ def editor_menu(screen, metadata, objectdata, map_path):
                     breakpoints_dropdown.handle_event(event, metadata, editor_grid)
                 elif save_map_button.check_for_input(menu_mouse_pos):
                     editor_grid.save_map(map_path, metadata, audio_length_ms)
+                    constants.EDITOR_START_TIME = 0
+                    constants.EDITOR_BEAT_DIVISOR = "1/4"
                     return states.MENU
                 elif (clicked_info := time_line.check_for_input(menu_mouse_pos))[0]:
                     editor_time_ms = time_line.update(clicked_info[1])
@@ -311,6 +316,7 @@ def editor_menu(screen, metadata, objectdata, map_path):
         save_map_button.change_color(menu_mouse_pos)
         change_song_setup_dropdown.draw(screen)
         choose_beat_division_dropdown.draw(screen)
+        breakpoints_dropdown.options = editor_grid.get_breakpoints_text()
         breakpoints_dropdown.draw(screen)
         add_breakpoint_button.update(screen)
         add_breakpoint_button.change_color(menu_mouse_pos)
@@ -323,6 +329,10 @@ def set_object_data(editor_grid, objectdata):
     for laser_object in objectdata["LaserObjects"]:
         laser_object.editor = True
         editor_grid.lasers.append(laser_object)
+
+def set_bp_data(editor_grid, bpdata):
+    for bp in bpdata:
+        editor_grid.add_breakpoint(bp["time"], bp["bpm"], bp["ramp"])
 
 def draw_selected_object_info(screen, selected_obj, font, x, y):
     if not selected_obj:

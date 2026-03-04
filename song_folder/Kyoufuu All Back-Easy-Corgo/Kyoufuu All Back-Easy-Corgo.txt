@@ -585,3 +585,10 @@ Audio Path: song_folder/Kyoufuu All Back-Easy-Corgo/Yukopi_-_強風オールバ�
 131166, 131314, 6, 8
 131314, 131462, 8, 8
 131462, 131611, 8, 6
+
+// Editor Breakpoint Ordering
+// time, bpm, ramp
+[Breakpoints]
+0, 135.0, False
+445, 135.0, False
+136000, 135.0, False

@@ -25,38 +25,57 @@ class Dropdown:
         self.text_color = (255, 255, 255)
 
     def handle_event(self, event, data, editor_grid=None):
-        if self.input_active and event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if self.popup_mode == "add_breakpoint":
                 if event.key == pygame.K_RETURN:
-                    if self.user_input.strip().isdigit():
-                        editor_grid.add_breakpoint(int(self.user_input))
+                    parts = self.user_input.strip().split(" ")
+
+                    if len(parts) >= 2:
+                        try:
+                            time_ms = int(parts[0].strip())
+                            bpm = float(parts[1].strip())
+
+                            ramp = False
+                            if len(parts) == 3:
+                                ramp = parts[2].strip().lower() == "ramp"
+
+                            editor_grid.add_breakpoint(time_ms, bpm, ramp)
+
+                        except ValueError:
+                            error_message = "Incorrect value submitted for add breakpoint."
+                            utils.show_error_modal(None, error_message)
+                            pass
+
                     self.user_input = ""
                     self.input_active = False
                     self.popup_mode = None
+                    
                 elif event.key == pygame.K_ESCAPE:
                     self.user_input = ""
                     self.input_active = False
                     self.popup_mode = None
+
                 elif event.key == pygame.K_BACKSPACE:
                     self.user_input = self.user_input[:-1]
+
                 elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL):
                     pasted = pygame.scrap.get(pygame.SCRAP_TEXT)
                     if pasted:
                         pasted_text = pasted.decode("utf-8").strip()
-                        pasted_text = "".join(c for c in pasted_text if c.isdigit())
 
-                        self.user_input += pasted_text
+                    self.user_input += pasted_text
                 else:
-                    if event.unicode.isdigit():
-                        self.user_input += event.unicode
+                    self.user_input += event.unicode
 
-            else:
+            elif self.input_active:
                 if event.key == pygame.K_RETURN:
                     if self.user_input.strip():
                         data[self.key_being_edited] = self.user_input.strip()
                     self.input_active = False
                 elif event.key == pygame.K_ESCAPE:
+                    self.user_input = ""
                     self.input_active = False
+                    self.popup_mode = None
                 elif event.key == pygame.K_BACKSPACE:
                     self.user_input = self.user_input[:-1]
                 elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL):
@@ -99,6 +118,7 @@ class Dropdown:
                         # Note subdivision
                         else:
                              data["value"] = option
+                             constants.EDITOR_BEAT_DIVISOR = option
                              self.title = option
 
     def draw(self, screen):
@@ -132,7 +152,7 @@ class Dropdown:
             pygame.draw.rect(screen, (50, 50, 50), popup_rect)
             pygame.draw.rect(screen, (255, 255, 255), popup_rect, utils.scale_x(3))            
             prompt_text = self.font_popup.render(
-                "Enter new breakpoint time (ms):",
+                "Enter: time_ms, bpm, optional 'ramp'",
                 True, (255, 255, 255))
             input_text = self.font_popup.render(
                 f"{self.user_input}",
@@ -184,6 +204,6 @@ class Dropdown:
         self.input_active = True
         self.user_input = ""
 
-    def delete_breakpoint(self):
-        if self.key_being_edited in self.options:
-            self.options.remove(self.key_being_edited)
+    def delete_breakpoint(self, editor_grid):
+        time_ms = int(self.key_being_edited.split(" ")[0].strip())
+        editor_grid.delete_breakpoint(time_ms)
