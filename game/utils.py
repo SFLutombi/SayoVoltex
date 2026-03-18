@@ -1,5 +1,5 @@
 import pygame, os, sys
-from game import constants, settings
+from game import constants, settings, theme
 from pathlib import Path
 
 from game.game_objects import HitObject, LaserObject
@@ -16,7 +16,7 @@ def set_keybinding(action, key):
     key_bindings[action] = key
 
 def get_font(size): 
-    return pygame.font.Font("assets/font/font.ttf", int(size))
+    return pygame.font.Font(theme.get_font_path(), int(size))
 
 def scale_x(num):
     return int(num * constants.SCALE_X)
