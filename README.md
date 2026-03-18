@@ -1,32 +1,69 @@
 # SayoVoltex
 
-SayoVoltex is a Python/Pygame rhythm game project with three main parts:
+Welcome to **SayoVoltex**.
 
-- a **main menu and settings flow**
-- a **song selection + gameplay flow**
-- an **in-game chart editor**
+This is a small rhythm game and chart editor I built with **Python** and **Pygame**. The repo includes the game client, the chart editor, the shared UI/gameplay systems, and a few sample song folders so you can boot it up and start testing right away.
 
-This README focuses on the practical question: **what do you need on your machine to run it, and how is the repo organized?**
+If your main question is **"how do I get this running on my machine quickly?"**, start here:
 
-## What this project expects
+## Quick setup
 
-From reading the codebase, the game is started directly with `python main.py`, and it expects to be run from the repository root so relative asset paths like `assets/...` and `song_folder/...` resolve correctly.
+### macOS / Linux
 
-Core runtime expectations from the code:
+```bash
+./setup.sh
+```
+
+That script will:
+
+- create a virtual environment in `.venv`
+- install the Python dependencies from `requirements.txt`
+- warn you about optional editor dependencies like FFmpeg
+- help with the `assets/Skin` vs `assets/skin` path issue on case-sensitive systems
+
+After that, run:
+
+```bash
+source .venv/bin/activate
+python main.py
+```
+
+### Windows (PowerShell)
+
+```powershell
+./setup.ps1
+```
+
+After that, run:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python main.py
+```
+
+If you do not want to use the helper scripts, the manual setup instructions are below.
+
+---
+
+## What you need installed
+
+To run SayoVoltex locally, you need:
 
 - **Python 3**
-- **Pygame** for the window, rendering, audio, input, and clipboard handling
-- **Mutagen** for reading audio metadata in the editor
-- **Tkinter** for native file dialogs in the editor
-- **A desktop/GUI environment** because this is not a headless CLI app
-- **Audio support** for `pygame.mixer`
-- **The `song_folder/` directory** with playable song folders inside it
+- **pip**
+- a machine with a normal **desktop GUI environment**
+- working **audio output**, since the game initializes the mixer at startup
 
-Optional-but-important dependency:
+Python packages used by the project are listed in `requirements.txt`.
 
-- **FFmpeg** is needed if you use the editor to import/convert audio files. The editor calls `ffmpeg` directly through `subprocess` when it needs to create `.wav` and `.ogg` versions of a track.
+### Optional but recommended
 
-## Quick start
+- **FFmpeg** if you want to use the editor to import/convert audio files
+- **Tkinter**, which is used for native file/folder pickers in the editor
+  - this is usually bundled with Python
+  - on some Linux installs, it may need to be installed separately
+
+## Manual setup
 
 ### 1. Clone the repo
 
@@ -35,7 +72,7 @@ git clone <your-repo-url>
 cd SayoVoltex
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create a virtual environment
 
 #### macOS / Linux
 
@@ -51,171 +88,158 @@ py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install Python dependencies
-
-There is currently no `requirements.txt`, so install the packages used by the repo manually:
+### 3. Install dependencies
 
 ```bash
-pip install pygame mutagen numpy
+pip install -r requirements.txt
 ```
 
-Notes:
-
-- `numpy` is only referenced by `game/debugging_module.py`, but installing it is harmless and helps avoid missing-module surprises if that module is used later.
-- `tkinter` is imported by the editor, but it is usually provided by your Python installation rather than installed with `pip`.
-
-### 4. Install FFmpeg if you want to use the editor fully
-
-The game can be played without FFmpeg if you only use existing song folders. However, the editor uses FFmpeg to convert audio into both `.wav` and `.ogg` files.
-
-Check whether it is already installed:
-
-```bash
-ffmpeg -version
-```
-
-If that command fails, install FFmpeg using your OS package manager or from the official FFmpeg distribution for your platform.
-
-### 5. Verify the asset folder name on case-sensitive systems
-
-The code references `assets/skin/...`, but the repository currently contains `assets/Skin/...`.
-
-That usually works on Windows, but it can fail on Linux and other case-sensitive filesystems. If your machine is case-sensitive, rename the folder so the on-disk name matches what the code loads:
-
-```bash
-mv assets/Skin assets/skin
-```
-
-If you are on Windows, you may not need to do anything here.
-
-### 6. Run the game
-
-From the repository root:
+### 4. Run the game
 
 ```bash
 python main.py
 ```
 
-Or, on systems where `python` points to Python 2:
+## Important platform note
+
+The code currently loads several files from `assets/skin/...`, while the repository directory is named `assets/Skin/...`.
+
+- On **Windows**, this usually works because the filesystem is case-insensitive.
+- On **Linux** and some **macOS** setups, this can fail.
+
+The setup script tries to handle that for you automatically on Unix-like systems. If you are setting things up manually and run into missing asset errors, fix it by renaming the folder:
 
 ```bash
-python3 main.py
+mv assets/Skin assets/skin
 ```
 
-## Platform notes
+## Running the game
 
-### Windows
+Always run the game from the repository root:
 
-Windows is likely the smoothest platform for the current codebase because:
+```bash
+python main.py
+```
 
-- the editor contains `ctypes.windll.user32...` calls to refocus the game window after opening a folder picker
-- case-insensitive filesystems hide the `Skin` vs `skin` path mismatch
+The project uses relative paths like `assets/...` and `song_folder/...`, so running it from some other directory will break asset and song loading.
 
-### Linux / macOS
+## Running the editor
 
-These platforms should still be able to run the project, but be aware of:
+The editor is part of the normal application flow.
 
-- **case-sensitive paths**: you may need to rename `assets/Skin` to `assets/skin`
-- **Tkinter availability**: some Python installs do not include it by default
-- **FFmpeg availability**: may need separate installation
-- **GUI/audio requirements**: running from a headless shell or remote session without display/audio support may fail
+From the main menu, you can go into the editor setup flow and either:
 
-Also note that the Windows-specific `ctypes.windll` logic in the editor may not behave correctly outside Windows if that exact path is exercised.
+- create a new song/chart folder
+- load an existing song folder
 
-## Repo structure
+A few notes about the editor:
 
-Here is the high-level structure of the repository:
+- it uses **Tkinter** for file and folder dialogs
+- it uses **Mutagen** to read audio file metadata
+- it calls **FFmpeg** through `subprocess` when converting/importing audio into both `.wav` and `.ogg`
+- some window-focus logic uses `ctypes.windll`, so the editor path is most comfortable on Windows right now
+
+If you only want to play the included sample songs, you do **not** need FFmpeg.
+
+## Project structure
+
+This is the rough layout of the repo:
 
 ```text
 SayoVoltex/
 ├── main.py
+├── requirements.txt
+├── setup.sh
+├── setup.ps1
 ├── assets/
-│   ├── Skin/              # note: code currently expects assets/skin/
+│   ├── Skin/
 │   ├── backgrounds/
 │   ├── font/
 │   └── images/
 ├── game/
-│   ├── screen_*.py        # menu/game/editor screens
-│   ├── settings.py        # load/save persistent settings
-│   ├── settings.json      # current saved settings
-│   ├── states.py          # application state names
-│   ├── music_player.py    # playback wrapper
-│   ├── game_objects.py    # note/laser data models
-│   ├── note_tool.py       # editor note placement logic
-│   ├── timeline.py        # editor timeline UI
-│   └── utils.py           # shared helpers
+│   ├── screen_main.py
+│   ├── screen_play.py
+│   ├── screen_map.py
+│   ├── screen_editor_initialize.py
+│   ├── screen_editor.py
+│   ├── settings.py
+│   ├── states.py
+│   ├── utils.py
+│   └── ...
 └── song_folder/
     └── <song directories>/
 ```
 
-## How the app flows
+## How the program is organized
 
 ### `main.py`
 
-`main.py` is the entry point. It:
+`main.py` is the entry point.
+
+It does the following:
 
 - initializes `pygame`
 - initializes the mixer
-- loads saved settings
-- creates the display window
+- loads saved settings from `game/settings.json`
+- creates the game window
 - enters the main state loop
-- dispatches to the correct screen module based on the current state
+- switches between menu/game/editor screens using values from `game/states.py`
 
-If you are trying to understand where to start debugging, this is the best first file to read.
+If you are trying to understand the flow of the project, this is the best place to start.
 
 ### `game/`
 
-The `game/` package holds nearly all application logic.
+The `game/` directory contains the actual systems that make the project work.
 
 #### Screen modules
 
-These files represent top-level screens or workflows:
+These are the top-level screens and flows:
 
 - `screen_main.py` — main menu
 - `screen_options.py` — options menu
-- `screen_set_keybinds.py` — keybinding configuration
-- `screen_set_resolution.py` — display settings
-- `screen_audio_settings.py` — audio settings
-- `screen_play.py` — song selection screen
-- `screen_map.py` — gameplay for a selected chart
-- `screen_map_complete.py` — result / completion screen
-- `screen_editor_initialize.py` — editor setup/import flow
-- `screen_editor.py` — chart editor itself
+- `screen_set_keybinds.py` — keybind setup
+- `screen_set_resolution.py` — resolution/fullscreen settings
+- `screen_audio_settings.py` — volume and audio delay settings
+- `screen_play.py` — song select screen
+- `screen_map.py` — gameplay screen for a selected chart
+- `screen_map_complete.py` — result screen
+- `screen_editor_initialize.py` — editor setup/import screen
+- `screen_editor.py` — the chart editor itself
 
 #### Shared systems
 
-Some important supporting modules:
+Some of the more important shared files are:
 
-- `constants.py` — shared constants and mutable globals used across screens
-- `utils.py` — asset loading, parsing helpers, scaling helpers, etc.
-- `settings.py` — default settings plus JSON load/save
-- `states.py` — string constants for app state transitions
-- `music_player.py` — playback controls used in menus/editor/gameplay
-- `get_game_objects.py` / `game_objects.py` — chart object parsing and data containers
-- `map_counters.py`, `map_details.py`, `song_tile.py` — gameplay and song-select UI data/presentation
-- `dropdown.py`, `button.py`, `slider.py`, `textfield.py`, `timeline.py` — reusable UI widgets
-- `note_tool.py`, `laser_cursor.py`, `metronome.py`, `rhythm_stabalizer.py` — editor/gameplay helpers
+- `settings.py` — loads/saves persistent settings
+- `states.py` — app state constants
+- `constants.py` — project-wide constants and mutable shared values
+- `utils.py` — helper functions for scaling, asset loading, chart parsing, etc.
+- `music_player.py` — audio playback wrapper
+- `game_objects.py` — note and laser object models
+- `note_tool.py` — chart editing logic for placing notes/lasers
+- `timeline.py` — editor timeline UI
+- `button.py`, `dropdown.py`, `slider.py`, `textfield.py` — reusable UI controls
 
-## How songs are organized
+## Songs and charts
 
-The game expects songs inside `song_folder/`, one folder per song/chart set.
+The game looks for content inside `song_folder/`.
 
 Each song folder typically contains:
 
-- a chart text file (`.txt`)
-- audio files (`.wav` and/or `.ogg`)
-- a cover/background image
-- sometimes helper files used while editing
+- a chart `.txt` file
+- audio files such as `.wav` and/or `.ogg`
+- a song image or cover image
+- optionally extra helper files used while editing
 
-Example folders already included in the repo:
+The repository already includes sample folders you can use immediately:
 
 - `song_folder/Brain Power-Extreme-Crogo/`
 - `song_folder/Gary Come Home Punk Cover-Easy-Corgo/`
 - `song_folder/Kyoufuu All Back-Easy-Corgo/`
 
-If you only want to test the game locally, these sample song folders should be enough to get started.
+So if you just want to verify that the project boots and can load songs, you do not need to prepare your own content first.
 
-## Settings and save behavior
+## Settings
 
 User settings are stored in:
 
@@ -223,68 +247,60 @@ User settings are stored in:
 game/settings.json
 ```
 
-If that file is missing, the code falls back to defaults from `game/settings.py`.
+If that file does not exist, the project falls back to the defaults defined in `game/settings.py`.
 
-Current settings include things like:
+Settings include:
 
 - music volume
 - SFX volume
 - audio delay
 - scroll speed
 - resolution
-- fullscreen mode
+- fullscreen
 - keybindings
-- whether to show instructions on launch
+- whether instructions should be shown on launch
 
-## Common run issues
+## Troubleshooting
 
-### `ModuleNotFoundError: No module named 'pygame'` or `'mutagen'`
+### `ModuleNotFoundError`
 
-Install the missing package into your virtual environment:
+Make sure your virtual environment is activated and that you installed dependencies:
 
 ```bash
-pip install pygame mutagen numpy
+pip install -r requirements.txt
 ```
 
-### The window opens but assets fail to load
+### Assets are not loading
 
-Make sure you:
+Make sure:
 
-- launched the game from the repo root
-- fixed the `assets/Skin` vs `assets/skin` mismatch if your filesystem is case-sensitive
+- you launched the game from the repo root
+- the `assets/Skin` vs `assets/skin` issue has been fixed on case-sensitive filesystems
 
-### The editor fails when importing audio
+### The editor cannot import audio
 
-You probably need FFmpeg on your `PATH`:
+Check that FFmpeg is installed and available on your `PATH`:
 
 ```bash
 ffmpeg -version
 ```
 
-### Tkinter-related errors
+### Tkinter errors
 
-Your Python install may not include Tkinter. Install a Python distribution that includes it, or add the OS package that provides Tk support.
+Your Python installation may not include Tk support. Install a Python build that includes Tkinter, or install the OS package that provides it.
 
-### Audio initialization fails
+### Audio init errors on startup
 
-This project calls `pygame.mixer.init(...)` immediately at startup, so machines without working audio output/configuration may fail early.
+The game calls `pygame.mixer.init(...)` immediately on launch. If your system has no working audio device/configuration, startup can fail early.
 
-## Suggested development workflow
+## Recommended workflow for contributors
 
-If you want to work on the project locally:
+If you plan to work on the project, I recommend this flow:
 
-1. create a virtual environment
-2. install `pygame`, `mutagen`, and `numpy`
-3. make sure FFmpeg is installed if you will use the editor
-4. verify the `assets/skin` path issue on case-sensitive systems
-5. run `python main.py` from the repo root
+1. run the setup script
+2. activate `.venv`
+3. launch with `python main.py`
+4. test the included songs first
+5. install FFmpeg before doing editor-heavy work
 
-## Future improvements worth adding
-
-The repository would be easier for contributors to use if it also added:
-
-- a `requirements.txt` or `pyproject.toml`
-- a short supported-platform note
-- a fix for the `Skin` vs `skin` mismatch
-- a note on whether the editor is officially Windows-only or cross-platform
-- a formal chart/song-folder format description
+That should give you the smoothest path to getting started.
