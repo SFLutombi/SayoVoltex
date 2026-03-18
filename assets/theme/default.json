@@ -1,0 +1,25 @@
+{
+  "font_path": "assets/font/font.ttf",
+  "colors": {
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#D7FCD4",
+    "text_accent": "#B68F40",
+    "button_base": "#D7FCD4",
+    "button_hover": "#FFFFFF",
+    "overlay_soft": [8, 10, 18, 70],
+    "overlay_strong": [0, 0, 0, 150],
+    "modal_background": [125, 150, 160],
+    "modal_border": [255, 255, 255]
+  },
+  "assets": {
+    "main_menu_background": "assets/backgrounds/start_screen_background.png",
+    "options_background": "assets/backgrounds/options_background.png",
+    "play_background": "assets/backgrounds/play_background.png",
+    "logo": "assets/images/sayovoltex_logo.png",
+    "song_tile_cover": "assets/images/song_tile_cover.png",
+    "map_details_panel": "assets/images/map_details_image.png",
+    "instruction_checkbox_empty": "assets/images/empty_box.png",
+    "instruction_checkbox_checked": "assets/images/checked_box.png",
+    "default_song_texture": "assets/images/default_texture.jpg"
+  }
+}
