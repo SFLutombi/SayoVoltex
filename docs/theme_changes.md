@@ -36,3 +36,18 @@ This pass only moves presentation decisions out of the screen code. It does **no
 ## Why this is a good first step
 
 This creates a clean seam between visuals and behavior. If new assets are added later, most of the visual swaps can happen in the theme file instead of forcing another sweep through every screen module.
+
+
+6. Replaced the first-pass theme assets with a more deliberate neon rhythm-game visual set.
+   - Added new menu, options, and song-select backgrounds with brighter cyan/pink/purple contrast.
+   - Added a circular hero badge for the main menu play button.
+   - Added a darker song-tile frame and a cleaner details panel for song select.
+
+7. Upgraded the shared `Button` renderer for text buttons.
+   - Text-only buttons now render as rounded neon panels instead of plain floating text.
+   - Hover still works the same way, but the buttons now have a much stronger UI presence.
+
+
+8. Removed the generated bitmap theme assets from version control.
+   - The theme now uses generated surface definitions from JSON instead of checked-in bitmap files.
+   - This keeps the theme text-only and avoids binary-file workflow issues when reviewing or editing changes.

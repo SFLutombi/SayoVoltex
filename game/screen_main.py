@@ -7,11 +7,9 @@ from game import button, settings, states, utils, constants, theme
 
 def main_menu(screen):
     pygame.display.set_caption("Menu")  
-    main_menu_background = pygame.image.load(theme.get_asset("main_menu_background"))
-    main_menu_background = pygame.transform.scale(main_menu_background, screen.get_size()).convert()
+    main_menu_background = theme.load_image("main_menu_background", screen.get_size(), convert_alpha=False)
 
-    sayovoltex_logo = pygame.image.load(theme.get_asset("logo")).convert_alpha()
-    sayovoltex_logo = pygame.transform.scale(sayovoltex_logo, (utils.scale_x(500), utils.scale_y(500)))
+    sayovoltex_logo = theme.load_image("logo", (utils.scale_x(500), utils.scale_y(500)))
 
     play_button = button.Button(image=sayovoltex_logo, pos=(utils.scale_x(640), utils.scale_y(300)), 
                              text_input="", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)), 
@@ -107,10 +105,8 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
         hovering_color=theme.get_color("text_accent")
     )
 
-    empty_checkbox_image = pygame.image.load(theme.get_asset("instruction_checkbox_empty")).convert_alpha() 
-    empty_checkbox_image = pygame.transform.scale(empty_checkbox_image, (utils.scale_x(25), utils.scale_y(25)))
-    filled_checkbox_image = pygame.image.load(theme.get_asset("instruction_checkbox_checked")).convert_alpha() 
-    filled_checkbox_image = pygame.transform.scale(filled_checkbox_image, (utils.scale_x(25), utils.scale_y(25)))
+    empty_checkbox_image = theme.load_image("instruction_checkbox_empty", (utils.scale_x(25), utils.scale_y(25)))
+    filled_checkbox_image = theme.load_image("instruction_checkbox_checked", (utils.scale_x(25), utils.scale_y(25)))
 
     dont_show_on_launch_button = button.Button(
         image=empty_checkbox_image if game_settings["show_instructions_on_launch"] else filled_checkbox_image,

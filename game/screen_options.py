@@ -4,8 +4,7 @@ from game import button, states, utils, constants, theme
 
 def options_menu(screen):
     pygame.display.set_caption("Menu")
-    options_background = pygame.image.load(theme.get_asset("options_background"))
-    options_background = pygame.transform.scale(options_background, screen.get_size()).convert()
+    options_background = theme.load_image("options_background", screen.get_size(), convert_alpha=False)
 
     options_text = utils.get_font(utils.scale_y(constants.SIZE_LARGE)).render("OPTIONS MENU", True, theme.get_color("text_accent"))
     options_text_rect = options_text.get_rect(center=(utils.scale_x(640), utils.scale_y(100)))

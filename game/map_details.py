@@ -11,8 +11,7 @@ class MapDetails:
         self.scroll_speed = 0.00
         self.BPM = 0
 
-        self.image = pygame.image.load(theme.get_asset("map_details_panel")).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (utils.scale_x(400), utils.scale_y(250)))
+        self.image = theme.load_image("map_details_panel", (utils.scale_x(400), utils.scale_y(250)))
 
     def update(self, screen):
         screen.blit(self.image, (utils.scale_x(0), utils.scale_y(0)))
