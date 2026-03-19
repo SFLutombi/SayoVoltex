@@ -1,5 +1,5 @@
 import pygame
-from game import utils, constants
+from game import utils, constants, theme
 
 class MapDetails:
     def __init__(self):
@@ -11,8 +11,7 @@ class MapDetails:
         self.scroll_speed = 0.00
         self.BPM = 0
 
-        self.image = pygame.image.load("assets/images/map_details_image.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (utils.scale_x(400), utils.scale_y(250)))
+        self.image = theme.load_image("map_details_panel", (utils.scale_x(400), utils.scale_y(250)))
 
     def update(self, screen):
         screen.blit(self.image, (utils.scale_x(0), utils.scale_y(0)))
@@ -29,17 +28,17 @@ class MapDetails:
             f"BPM: {self.BPM}",
         ]
 
-        title_text = font_tiny.render(details[0], True, "White")
+        title_text = font_tiny.render(details[0], True, theme.get_color("text_primary"))
         screen.blit(title_text, (utils.scale_x(3), utils.scale_y(10)))
-        artist_text = font_xtiny.render(details[1], True, "White")
+        artist_text = font_xtiny.render(details[1], True, theme.get_color("text_primary"))
         screen.blit(artist_text, (utils.scale_x(5), utils.scale_y(50)))
-        creator_text = font_xtiny.render(details[2], True, "White")
+        creator_text = font_xtiny.render(details[2], True, theme.get_color("text_primary"))
         screen.blit(creator_text, (utils.scale_x(5), utils.scale_y(90)))
-        version_text = font_xtiny.render(details[3], True, "White")
+        version_text = font_xtiny.render(details[3], True, theme.get_color("text_primary"))
         screen.blit(version_text, (utils.scale_x(5), utils.scale_y(130)))
-        length_text = font_xtiny.render(details[4], True, "White")
+        length_text = font_xtiny.render(details[4], True, theme.get_color("text_primary"))
         screen.blit(length_text, (utils.scale_x(5), utils.scale_y(170)))
-        scroll_speed_text = font_xtiny.render(details[5], True, "White")
+        scroll_speed_text = font_xtiny.render(details[5], True, theme.get_color("text_primary"))
         screen.blit(scroll_speed_text, (utils.scale_x(150), utils.scale_y(170)))
-        bpm_text = font_xtiny.render(details[6], True, "White")
+        bpm_text = font_xtiny.render(details[6], True, theme.get_color("text_primary"))
         screen.blit(bpm_text, (utils.scale_x(5), utils.scale_y(210)))

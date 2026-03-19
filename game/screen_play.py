@@ -1,23 +1,21 @@
 import pygame, sys, os
-from game import button, music_player, settings, states, utils, constants, song_tile, map_details
+from game import button, music_player, settings, states, utils, constants, song_tile, map_details, theme
 
 
 
 def play_menu(screen):
 
     pygame.display.set_caption("Play")
-    play_background = pygame.image.load("assets/backgrounds/play_background.png")
-    play_background = pygame.transform.scale(play_background, screen.get_size()).convert()
+    play_background = theme.load_image("play_background", screen.get_size(), convert_alpha=False)
 
-    play_text = utils.get_font(utils.scale_y(constants.SIZE_LARGE)).render("Play", True, "#b68f40")
+    play_text = utils.get_font(utils.scale_y(constants.SIZE_LARGE)).render("Play", True, theme.get_color("text_accent"))
     play_text_rect = play_text.get_rect(center=(utils.scale_x(640), utils.scale_y(100)))
 
-    song_tile_cover = pygame.image.load("assets/images/song_tile_cover.png").convert_alpha()
-    song_tile_cover = pygame.transform.scale(song_tile_cover, (utils.scale_x(225), utils.scale_y(75)))
+    song_tile_cover = theme.load_image("song_tile_cover", (utils.scale_x(225), utils.scale_y(75)))
 
     back_button = button.Button(image=None, pos=(utils.scale_x(150), utils.scale_y(650)), 
                              text_input="Back", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)), 
-                             base_color="#d7fcd4", hovering_color="White")
+                             base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     game_settings = settings.load_settings()
 
     song_tiles = []
@@ -45,6 +43,11 @@ def play_menu(screen):
 
     while True:
         screen.blit(play_background, (0, 0))
+
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill(theme.get_color("overlay_soft"))
+        screen.blit(overlay, (0, 0))
+
         play_mouse_pos = pygame.mouse.get_pos()
 
         screen.blit(play_text, play_text_rect)

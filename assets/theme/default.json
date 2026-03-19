@@ -1,0 +1,71 @@
+{
+  "font_path": "assets/font/font.ttf",
+  "colors": {
+    "text_primary": "#F8F8FF",
+    "text_secondary": "#BFEFFF",
+    "text_accent": "#FF8BD7",
+    "button_base": "#F7F8FF",
+    "button_hover": "#FFFFFF",
+    "overlay_soft": [
+      8,
+      10,
+      18,
+      86
+    ],
+    "overlay_strong": [
+      2,
+      4,
+      10,
+      188
+    ],
+    "modal_background": [
+      28,
+      24,
+      40
+    ],
+    "modal_border": [
+      255,
+      170,
+      230
+    ],
+    "button_fill": [
+      18,
+      20,
+      28,
+      232
+    ],
+    "button_fill_hover": [
+      255,
+      124,
+      196,
+      236
+    ],
+    "button_border": [
+      96,
+      224,
+      255
+    ],
+    "button_border_hover": [
+      255,
+      255,
+      255
+    ],
+    "button_shadow": [
+      0,
+      0,
+      0,
+      105
+    ]
+  },
+  "assets": {
+    "main_menu_background": "generated:main_menu_background",
+    "options_background": "generated:options_background",
+    "play_background": "generated:play_background",
+    "logo": "generated:logo",
+    "song_tile_cover": "generated:song_tile_cover",
+    "map_details_panel": "generated:map_details_panel",
+    "instruction_checkbox_empty": "assets/images/empty_box.png",
+    "instruction_checkbox_checked": "assets/images/checked_box.png",
+    "default_song_texture": "assets/images/default_texture.jpg"
+  }
+}

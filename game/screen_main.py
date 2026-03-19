@@ -1,5 +1,5 @@
 import pygame, sys
-from game import button, settings, states, utils, constants
+from game import button, settings, states, utils, constants, theme
 
 
 
@@ -7,27 +7,25 @@ from game import button, settings, states, utils, constants
 
 def main_menu(screen):
     pygame.display.set_caption("Menu")  
-    main_menu_background = pygame.image.load("assets/backgrounds/start_screen_background.png")
-    main_menu_background = pygame.transform.scale(main_menu_background, screen.get_size()).convert()
+    main_menu_background = theme.load_image("main_menu_background", screen.get_size(), convert_alpha=False)
 
-    sayovoltex_logo = pygame.image.load("assets/images/sayovoltex_logo.png").convert_alpha()
-    sayovoltex_logo = pygame.transform.scale(sayovoltex_logo, (utils.scale_x(500), utils.scale_y(500)))
+    sayovoltex_logo = theme.load_image("logo", (utils.scale_x(500), utils.scale_y(500)))
 
     play_button = button.Button(image=sayovoltex_logo, pos=(utils.scale_x(640), utils.scale_y(300)), 
                              text_input="", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)), 
-                             base_color="#d7fcd4", hovering_color="White")
+                             base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     options_button = button.Button(image=None, pos=(utils.scale_x(640), utils.scale_y(650)), 
                                 text_input="OPTIONS", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)), 
-                                base_color="#d7fcd4", hovering_color="White")
+                                base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     quit_button = button.Button(image=None, pos=(utils.scale_x(1130), utils.scale_y(650)), 
                              text_input="QUIT", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)),
-                             base_color="#d7fcd4", hovering_color="White")
+                             base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     editor_button = button.Button(image=None, pos=(utils.scale_x(150), utils.scale_y(650)), 
                              text_input="EDITOR", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)),
-                             base_color="#d7fcd4", hovering_color="White")
+                             base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     information_button = button.Button(image=None, pos=(utils.scale_x(1250), utils.scale_y(30)), 
                              text_input="?", font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)),
-                             base_color="#d7fcd4", hovering_color="White")
+                             base_color=theme.get_color("button_base"), hovering_color=theme.get_color("button_hover"))
     
 
     # Load image assets for later
@@ -38,6 +36,10 @@ def main_menu(screen):
     
     while True:
         screen.blit(main_menu_background, (0, 0))
+
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill(theme.get_color("overlay_soft"))
+        screen.blit(overlay, (0, 0))
 
         menu_mouse_pos = pygame.mouse.get_pos()
 
@@ -80,8 +82,8 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
             screen.get_height() // 2 + utils.scale_y(200)),
         text_input="<",
         font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)),
-        base_color="White",
-        hovering_color="#b68f40"
+        base_color=theme.get_color("text_primary"),
+        hovering_color=theme.get_color("text_accent")
     )
     go_right_button = button.Button(
         image=None,
@@ -89,8 +91,8 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
             screen.get_height() // 2 + utils.scale_y(200)),
         text_input=">",
         font=utils.get_font(utils.scale_y(constants.SIZE_MEDIUM_SMALL)),
-        base_color="White",
-        hovering_color="#b68f40"
+        base_color=theme.get_color("text_primary"),
+        hovering_color=theme.get_color("text_accent")
     )
 
     exit_button = button.Button(
@@ -99,14 +101,12 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
             screen.get_height() // 2 + utils.scale_y(200)),
         text_input="×",
         font=utils.get_font(utils.scale_y(constants.SIZE_SMALL)),
-        base_color="White",
-        hovering_color="#b68f40"
+        base_color=theme.get_color("text_primary"),
+        hovering_color=theme.get_color("text_accent")
     )
 
-    empty_checkbox_image = pygame.image.load("assets/images/empty_box.png").convert_alpha() 
-    empty_checkbox_image = pygame.transform.scale(empty_checkbox_image, (utils.scale_x(25), utils.scale_y(25)))
-    filled_checkbox_image = pygame.image.load("assets/images/checked_box.png").convert_alpha() 
-    filled_checkbox_image = pygame.transform.scale(filled_checkbox_image, (utils.scale_x(25), utils.scale_y(25)))
+    empty_checkbox_image = theme.load_image("instruction_checkbox_empty", (utils.scale_x(25), utils.scale_y(25)))
+    filled_checkbox_image = theme.load_image("instruction_checkbox_checked", (utils.scale_x(25), utils.scale_y(25)))
 
     dont_show_on_launch_button = button.Button(
         image=empty_checkbox_image if game_settings["show_instructions_on_launch"] else filled_checkbox_image,
@@ -114,8 +114,8 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
             screen.get_height() // 2 + utils.scale_y(100)),
         text_input="",
         font=utils.get_font(utils.scale_y(constants.SIZE_SMALL)),
-        base_color="White",
-        hovering_color="#b68f40"
+        base_color=theme.get_color("text_primary"),
+        hovering_color=theme.get_color("text_accent")
     )
 
     clock = pygame.time.Clock()
@@ -131,7 +131,8 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
 
         # Dark overlay (dim background)
         overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
+        overlay.fill(theme.get_color("overlay_strong"))
+        screen.blit(overlay, (0, 0))
 
         # Draw error box
         box_rect = display_setup_instructions(screen, current_slide, go_left_button)
@@ -160,7 +161,7 @@ def setup_instructions(screen, menu_mouse_pos, background_copy, game_settings):
         if current_slide == 1:
             checkbox_label_font = utils.get_font(utils.scale_y(constants.SIZE_XTINY))
             label_text = "Turn off open on launch"
-            label_surface = checkbox_label_font.render(label_text, True, (255, 255, 255))
+            label_surface = checkbox_label_font.render(label_text, True, theme.get_color("text_primary"))
             label_rect = label_surface.get_rect(midright=(dont_show_on_launch_button.rect.left - utils.scale_x(10), dont_show_on_launch_button.rect.centery))
             screen.blit(label_surface, label_rect)
             dont_show_on_launch_button.change_color(menu_mouse_pos)
@@ -208,16 +209,16 @@ def display_setup_instructions(screen, current_slide, go_left_button):
     title_surf = None
 
     if current_slide == 1:
-        title_surf = title_font.render("How To Setup Your Sayodevice", True, (255, 255, 255))
+        title_surf = title_font.render("How To Setup Your Sayodevice", True, theme.get_color("text_primary"))
         message = "Use the arrows to traverse through the 2 easy steps in order to set up your sayodevice in order to play SayoVoltex"
     elif current_slide == 2:
-        title_surf = title_font.render("Step 1:", True, (255, 255, 255))
+        title_surf = title_font.render("Step 1:", True, theme.get_color("text_primary"))
         message = "Visit sayodevice.com and if your device is not already added click “Add device” and select your sayodevice and then click on “Connect”. If you don’t want to lose your scroll button mapping select “Backup” under “Backup & Restore”."
     elif current_slide == 3:
-        title_surf = title_font.render("Step 2:", True, (255, 255, 255))
+        title_surf = title_font.render("Step 2:", True, theme.get_color("text_primary"))
         message = "Under Configuration -> Binding you will say a layout for your sayodevice, click on the large half circle on the left. Under “Key Mode” choose “Loop Key”, under “Key” choose any key not already set on your sayodevice (I would suggest w), and under “Input Interval” set it to “1”. Do the same thing for the half circle on the right but choose a different key (I would suggest q)."        
     else:
-        title_surf = title_font.render("Thats It", True, (255, 255, 255))
+        title_surf = title_font.render("Thats It", True, theme.get_color("text_primary"))
         message = "Lastly go to options in SayoVoltex and configure your settings and you’ll be ready to play."
     center_x, center_y = utils.scale_pos(constants.BASE_W // 2, constants.BASE_H // 2)
 
@@ -225,7 +226,7 @@ def display_setup_instructions(screen, current_slide, go_left_button):
     
     # Wrap message text
     lines = utils.wrap_text(message, body_font, max_text_width)
-    text_surfs = [body_font.render(line, True, (255, 255, 255)) for line in lines]
+    text_surfs = [body_font.render(line, True, theme.get_color("text_primary")) for line in lines]
     # Calculate box size
     text_width = max(surf.get_width() for surf in text_surfs)
     text_height = sum(surf.get_height() for surf in text_surfs) + line_spacing * (len(text_surfs) - 1)
@@ -234,8 +235,8 @@ def display_setup_instructions(screen, current_slide, go_left_button):
     box_rect = pygame.Rect(0, 0, box_width, box_height)
     box_rect.center = (center_x, center_y)
     # Draw box
-    pygame.draw.rect(screen, (125, 150, 160), box_rect)
-    pygame.draw.rect(screen, (255, 255, 255), box_rect, border_thickness)
+    pygame.draw.rect(screen, theme.get_color("modal_background"), box_rect)
+    pygame.draw.rect(screen, theme.get_color("modal_border"), box_rect, border_thickness)
     # Draw title
     title_rect = title_surf.get_rect(
         midtop=(box_rect.centerx, box_rect.top + padding)

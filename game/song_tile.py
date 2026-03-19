@@ -1,5 +1,5 @@
 import pygame, os
-from game import utils, constants
+from game import utils, constants, theme
 
 class SongTile:
     def __init__(self, song_folder_path, cover):
@@ -17,7 +17,7 @@ class SongTile:
         self.scroll_speed = float(parsed_metadata.get("Scroll Speed") or 0)
         self.BPM = int(parsed_metadata.get("BPM") or 0)
         self.audio_lead_in = int(parsed_metadata.get("Audio Lead In") or 0)
-        default_image_path = "assets/images/default_texture.jpg"
+        default_image_path = theme.get_asset("default_song_texture")
         self.image_path = parsed_metadata.get("Image Path", default_image_path)
         self.audio_path = parsed_metadata.get("Audio Path", "NULL")
 
